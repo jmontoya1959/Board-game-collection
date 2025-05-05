@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+// hooks/useLocalStorage.ts
+import { useState, useEffect } from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -6,19 +7,16 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       return initialValue;
     }
   });
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(key, JSON.stringify(storedValue));
-    } catch (error) {
-      console.error(error);
-    }
+    window.localStorage.setItem(key, JSON.stringify(storedValue));
   }, [key, storedValue]);
 
   return [storedValue, setStoredValue] as const;
 }
+
