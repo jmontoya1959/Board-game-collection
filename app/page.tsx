@@ -4,12 +4,15 @@
 import { useState } from 'react';
 import { useLocalStorage } from './lib/useLocalStorage';
 import { XMLParser } from 'fast-xml-parser';
+import Image from 'next/image'
 
 type Game = {
   id: string;
-  name: string;
+  title: string;
   image: string;
+  alt?: string; // Optional alt text for the image
   description: string;
+  bggId: number;
 };
 
 export default function Home() {
@@ -20,7 +23,7 @@ export default function Home() {
     if (!search.trim()) return;
 
     const parser = new XMLParser({
-      ignoreAttributes: false, // ✅ this is IMPORTANT to parse @ attributes
+      ignoreAttributes: false, //  this is IMPORTANT to parse @ attributes
     });
 
     try {
@@ -36,7 +39,7 @@ export default function Home() {
       }
 
       const firstItem = Array.isArray(items) ? items[0] : items;
-      const gameId = firstItem['@_id']; // ✅ use '@_id' for attribute
+      const gameId = firstItem['@_id']; //  use '@_id' for attribute
 
       // Fetch game details
       const detailsRes = await fetch(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&stats=1`);
@@ -45,19 +48,22 @@ export default function Home() {
 
       const gameData = detailsData.items.item;
 
-      // ✅ Get primary name
-      let name = '';
+      //  Get primary name
+      let title = '';
       if (Array.isArray(gameData.name)) {
-        const primary = gameData.name.find((n: any) => n['@_type'] === 'primary');
-        name = primary ? primary['@_value'] : gameData.name[0]['@_value'];
+        const primary = (gameData.name as { ['@_type']: string; ['@_value']: string }[]).find(n => n['@_type'] === 'primary');
+        title = primary
+          ? primary['@_value']
+          : gameData.name[0]['@_value'];
       } else {
-        name = gameData.name['@_value'];
+        title = gameData.name['@_value'];
       }
 
       const image = gameData.image || '';
       const description = gameData.description || '';
+      const bggId = Number(gameId);
 
-      const newGame: Game = { id: gameId, name, image, description };
+      const newGame: Game = { id: gameId, title, image, description, bggId };
 
       setCollection(prev => [...prev, newGame]);
       setSearch('');
@@ -97,13 +103,16 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {collection.map(game => (
             <div key={game.id} className="bg-gray-900 rounded shadow p-4">
-              <h2 className="text-xl font-semibold mb-2">{game.name}</h2>
+              <h2 className="text-xl font-semibold mb-2">{game.title}</h2>
               {game.image && (
-                <img
-                  src={game.image}
-                  alt={game.name}
-                  className="mb-2 w-full h-48 object-cover rounded"
-                />
+              <Image
+                src={game.image}
+                alt={game.title}
+                width={200}
+                height={200}
+                className="rounded"
+              />
+
               )}
               <p className="text-sm text-gray-300 mb-2">
                 {game.description.slice(0, 150)}...

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { XMLParser } from 'fast-xml-parser';
+import Image from 'next/image'
+
 
 type Game = {
   id: string;
   name: string;
   image: string;
+  alt: string;
   description: string;
 };
 
@@ -22,11 +24,12 @@ export default function Home() {
   }, [collection]);
 
   const handleAddGame = async () => {
-    // Simulate API fetch or replace this with actual API logic
+   
     const game: Game = {
       id: Date.now().toString(),
       name: search,
       image: `https://via.placeholder.com/150?text=${encodeURIComponent(search)}`,
+      alt: `Image of ${search}`,
       description: `This is a description for ${search}.`
     };
 
@@ -61,18 +64,24 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {collection.map(game => (
           <div key={game.id} className="bg-gray-800 rounded p-4 shadow-lg">
-            <img src={game.image} alt={game.name} className="rounded mb-2" />
-            <h2 className="text-xl font-bold">{game.name}</h2>
-            <p className="text-gray-400">{game.description}</p>
-            <button
-              onClick={() => handleRemove(game.id)}
-              className="mt-2 text-sm text-red-500 hover:underline"
-            >
-              Remove
-            </button>
+        <Image
+          src={game.image}
+          alt={game.name}
+          width={128}
+          height={128}
+          className="rounded object-cover"
+        />
+        <h2 className="text-xl font-bold mt-2">{game.name}</h2>
+        <p className="text-gray-400">{game.description}</p>
+        <button
+          onClick={() => handleRemove(game.id)}
+          className="mt-2 text-sm text-red-500 hover:underline"
+        >
+          Remove
+        </button>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
+        </div>
+      );
+    }

@@ -32,7 +32,11 @@ export default function GameForm({ onAdd, onUpdate, editingGame }: Props) {
       year: editingGame ? editingGame.year : new Date().getFullYear().toString(),
     };
 
-    editingGame ? onUpdate(game) : onAdd(game);
+    if (editingGame) {
+      onUpdate(game);
+    } else {
+      onAdd(game);
+    }
     setName('');
     setPublisher('');
   };
